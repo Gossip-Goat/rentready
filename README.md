@@ -9,9 +9,15 @@ A bond-back app for Australian renters. It helps tenants:
 
 Covers all eight states and territories. See [RULES.md](RULES.md) for the rules used, their sources, and what still needs checking.
 
+## Files
+
+- `index.html`: landing page with a waitlist and a $1 pre-order test.
+- `app.html`: the app itself.
+- `RULES.md`: the tenancy rules used, with sources.
+
 ## Running it
 
-The app is a single file, `index.html`, with no build step. Open it in a browser, or serve the folder:
+No build step. Open the files in a browser, or serve the folder:
 
 ```
 npx serve .
@@ -23,4 +29,12 @@ Export (reports, letters, backups) uses the claude.ai artifact `downloads` capab
 
 ## Status
 
-Prototype. Rules are general information, not legal advice, and need a lawyer's review before launch. Next steps: a landing page with a pre-order test, then a React Native or Flutter app.
+Prototype. Rules are general information, not legal advice, and need a lawyer's review before launch. Next steps: connect the waitlist and pre-order (below), run the demand test, then a React Native or Flutter app.
+
+## Launching the landing page
+
+1. Create a form backend that accepts a JSON POST (for example Formspree or Tally) and paste its URL into `WAITLIST_ENDPOINT` in `index.html`.
+2. Create a Stripe Payment Link for the $1 refundable pre-order and paste it into `PREORDER_URL`.
+3. Turn on GitHub Pages (Settings, Pages, deploy from the `main` branch). Note that Pages on a private repo needs a paid GitHub plan; otherwise make the repo public or use Netlify or Vercel.
+
+The plan's success bar: 500 waitlist sign-ups and at least 5% pre-ordering.
