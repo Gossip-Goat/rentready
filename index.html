@@ -1,653 +1,185 @@
 <title>RentReady</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="RentReady helps Australian renters get their bond back: timestamped move-in photos, a bond claim checker and a reply letter for your state.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: app shell; sticky header with tabs, single working column (max 880px), cards only for rooms and claims */
+/* Layout: one column landing; hero with a mock bond-claim receipt, proof stat band, steps, pricing pair, waitlist form, FAQ */
 :root{
   --bg:#f5f7f4; --surface:#ffffff; --sunk:#eaefe9; --line:#d5ddd4;
   --ink:#16231d; --muted:#5a6b62;
   --brand:#1f4d3f; --brand-ink:#ffffff; --tag:#e8a317; --tag-ink:#2a1d00;
-  --ok:#1f7a4d; --ok-bg:#e1f2e8; --warn:#9a6400; --warn-bg:#fbefd5; --bad:#b3261e; --bad-bg:#fbe3e1;
+  --ok:#1f7a4d; --bad:#b3261e; --bad-bg:#fbe3e1;
   --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --r:10px;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0f1714; --surface:#16211c; --sunk:#1d2a24; --line:#2c3b34;
-  --ink:#e4ece7; --muted:#9aaba2;
-  --brand:#7cc4a7; --brand-ink:#0b1a14; --tag:#f0b43a; --tag-ink:#2a1d00;
-  --ok:#6fd39f; --ok-bg:#163326; --warn:#f0c062; --warn-bg:#33280f; --bad:#ff8a80; --bad-bg:#3a1a18;
-  color-scheme:dark}}
+  --bg:#0f1714; --surface:#16211c; --sunk:#1d2a24; --line:#2c3b34; --ink:#e4ece7; --muted:#9aaba2;
+  --brand:#7cc4a7; --brand-ink:#0b1a14; --tag:#f0b43a; --tag-ink:#2a1d00; --ok:#6fd39f; --bad:#ff8a80; --bad-bg:#3a1a18; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1714; --surface:#16211c; --sunk:#1d2a24; --line:#2c3b34;
-  --ink:#e4ece7; --muted:#9aaba2;
-  --brand:#7cc4a7; --brand-ink:#0b1a14; --tag:#f0b43a; --tag-ink:#2a1d00;
-  --ok:#6fd39f; --ok-bg:#163326; --warn:#f0c062; --warn-bg:#33280f; --bad:#ff8a80; --bad-bg:#3a1a18;
-  color-scheme:dark}
+  --bg:#0f1714; --surface:#16211c; --sunk:#1d2a24; --line:#2c3b34; --ink:#e4ece7; --muted:#9aaba2;
+  --brand:#7cc4a7; --brand-ink:#0b1a14; --tag:#f0b43a; --tag-ink:#2a1d00; --ok:#6fd39f; --bad:#ff8a80; --bad-bg:#3a1a18; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body)}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
-h1{font-size:1.35rem;font-weight:700}
-h2{font-size:1.5rem;font-weight:700}
-h3{font-size:1.05rem;font-weight:600}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body)}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
 p{margin:0}
-.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px 8px}
-.brand{display:flex;align-items:center;gap:10px}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+section{padding-block:56px}
+.bar{display:flex;align-items:center;justify-content:space-between;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font:700 1.15rem var(--display)}
 .logo{width:30px;height:30px;border-radius:7px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font:700 15px var(--display)}
-.save{font:12px var(--mono);color:var(--muted)}
-nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
-nav a{flex:none;padding:7px 12px;border-radius:999px;color:var(--muted);text-decoration:none;font-weight:500;font-size:14px}
-nav a[aria-current="page"]{background:var(--brand);color:var(--brand-ink)}
-nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--tag);outline-offset:2px}
-main{padding-block:24px 64px;display:grid;gap:20px}
-.lead{color:var(--muted);max-width:62ch}
-.stack{display:grid;gap:12px}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0}
+a{color:var(--brand)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 15px var(--body);padding:12px 18px;border-radius:9px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface);cursor:pointer}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--tag);outline-offset:2px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding-block:32px 56px}
+.hero h1{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:800;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;background:var(--tag);color:var(--tag-ink);padding:0 .12em;border-radius:6px}
+.hero .sub{font-size:1.15rem;color:var(--muted);margin-top:18px;max-width:34ch}
+.ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.receipt{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;font-size:14px;box-shadow:0 18px 40px -24px rgba(0,0,0,.35);transform:rotate(1.2deg);min-width:0}
+.receipt h3{font-size:1rem;margin-bottom:4px}
+.receipt .addr{font:12px var(--mono);color:var(--muted);margin-bottom:12px}
+.line{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.line s{color:var(--muted)}
+.chip{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--bad-bg);color:var(--bad);margin-left:6px;white-space:nowrap}
+.total{display:flex;justify-content:space-between;padding-top:10px;border-top:2px solid var(--ink);font:700 1.05rem var(--display);font-variant-numeric:tabular-nums}
+.total span:last-child{color:var(--ok)}
+.band{background:var(--brand);color:var(--brand-ink)}
+.band .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-block:36px}
+.band .n{font:800 2.6rem var(--display);font-variant-numeric:tabular-nums}
+.band p{opacity:.9;font-size:14px;max-width:30ch}
+.band a{color:inherit}
+h2{font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:700;margin-bottom:24px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:s}
+.step{display:grid;gap:8px;align-content:start}
+.step::before{counter-increment:s;content:counter(s);font:700 13px var(--mono);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);color:var(--brand)}
+.step h3{font-size:1.15rem}
+.step p{color:var(--muted)}
+.prices{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.price{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:10px;align-content:start}
+.price.feat{border:2px solid var(--brand)}
+.price .amt{font:800 2.2rem var(--display)}
+.price .amt small{font:500 14px var(--body);color:var(--muted)}
+.price ul{margin:0;padding-left:20px;display:grid;gap:4px;color:var(--muted)}
+.founding{font:600 12px var(--mono);color:var(--tag-ink);background:var(--tag);border-radius:999px;padding:3px 10px;justify-self:start}
+form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
 label{display:grid;gap:4px;font-size:13px;font-weight:500;color:var(--muted)}
-input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
-textarea{min-height:70px;resize:vertical}
-button,.btn{font:600 14px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:9px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
-button.ghost{border-color:transparent;background:transparent;color:var(--muted);padding:6px 8px}
-button:hover{filter:brightness(.97)}
-.banner{background:var(--warn-bg);color:var(--ink);border-radius:var(--r);padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.banner b{color:var(--warn)}
-.phase{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--sunk)}
-.phase button{border:0;border-radius:999px;padding:6px 14px;background:transparent;color:var(--muted)}
-.phase button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
-th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
-td.c,th.c{text-align:center;width:52px}
-.tw{overflow-x:auto}
-.yn{font:600 12px var(--mono);border-radius:6px;padding:4px 0;width:38px;justify-content:center}
-.yn[data-v="Y"]{background:var(--ok-bg);color:var(--ok);border-color:transparent}
-.yn[data-v="N"]{background:var(--bad-bg);color:var(--bad);border-color:transparent}
-.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
-.ph{position:relative;border-radius:8px;overflow:hidden;background:var(--sunk);aspect-ratio:4/3;max-width:100%}
-.ph img{width:100%;height:100%;object-fit:cover;display:block}
-.ph .meta{position:absolute;left:0;right:0;bottom:0;padding:3px 6px;font:10px/1.3 var(--mono);color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7))}
-.ph .x{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:6px;padding:2px 7px;font-size:12px}
-.tagchip{display:inline-block;font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
-.tagchip.ok{background:var(--ok-bg);color:var(--ok)}
-.tagchip.warn{background:var(--warn-bg);color:var(--warn)}
-.tagchip.bad{background:var(--bad-bg);color:var(--bad)}
-.mono{font-family:var(--mono);font-size:12px;color:var(--muted);word-break:break-all}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
-.stat .n{font:700 1.6rem var(--display);font-variant-numeric:tabular-nums}
-.stat .l{font-size:12px;color:var(--muted)}
-.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cmp h4{margin:0 0 4px;font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.verdict{border-left:4px solid var(--line);padding:6px 0 6px 12px;display:grid;gap:4px}
-.verdict.ok{border-color:var(--ok)} .verdict.warn{border-color:var(--tag)} .verdict.bad{border-color:var(--bad)}
-.letter{white-space:pre-wrap;font:13.5px/1.6 var(--body);background:var(--sunk);border-radius:8px;padding:14px;max-height:420px;overflow:auto}
-.steps{margin:0;padding-left:20px;display:grid;gap:6px}
-.fine{font-size:12px;color:var(--muted)}
-.check{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink);font-weight:400}
-.check input{width:auto;margin-top:4px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20}
-@media (max-width:520px){.cmp{grid-template-columns:1fr}}
+input,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 12px;width:100%;min-width:0}
+.msg{margin-top:10px;font-size:14px;min-height:1.4em}
+.faq{display:grid;gap:10px;max-width:720px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+summary{cursor:pointer;font-weight:600}
+details p{margin-top:8px;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-block:28px;color:var(--muted);font-size:13px}
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr}
+  .receipt{transform:none}
+  .band .wrap,.steps,.prices{grid-template-columns:1fr}
+  form{grid-template-columns:1fr}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<header>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand"><div class="logo">R</div><h1>RentReady</h1></div>
-      <span class="save" id="saveState">Saved on this device</span>
-    </div>
-    <nav id="nav">
-      <a href="#tenancy">Tenancy</a>
-      <a href="#inspect">Inspection</a>
-      <a href="#compare">Compare</a>
-      <a href="#bond">Bond check</a>
-      <a href="#rent">Rent increase</a>
-    </nav>
+<div class="wrap bar">
+  <div class="brand"><div class="logo">R</div>RentReady</div>
+  <a class="btn" href="app.html">Try the app</a>
+</div>
+
+<div class="wrap hero">
+  <div>
+    <h1>Get your <em>bond</em> back.</h1>
+    <p class="sub">Timestamped move-in photos, a bond claim checker and a reply letter that uses your state's rules. Built for Australian renters.</p>
+    <div class="ctas"><a class="btn primary" href="#waitlist">Join the waitlist</a><a class="btn" href="app.html">Try it free</a></div>
   </div>
-</header>
-<main class="wrap" id="app"></main>
-<div class="toast" id="toast" hidden></div>
+  <div class="receipt" aria-label="Example bond claim check">
+    <h3>Bond claim check</h3>
+    <div class="addr">Example · Marrickville NSW · bond $2,480</div>
+    <div class="line"><span>Carpet replacement<span class="chip">On move-in report</span></span><s>$1,400</s></div>
+    <div class="line"><span>Oven clean<span class="chip">On move-in report</span></span><s>$180</s></div>
+    <div class="line"><span>Repaint bedroom wall<span class="chip">Wear and tear</span></span><s>$450</s></div>
+    <div class="line"><span>Mould treatment, shower</span><span>$220</span></div>
+    <div class="total"><span>Back in your pocket</span><span>$2,260</span></div>
+  </div>
+</div>
+
+<div class="band">
+  <div class="wrap">
+    <div><div class="n">37%</div><p>of NSW renters lost some or all of their bond in the year to Sep 2026 (<a href="https://www.choice.com.au/money/property/renting/articles/new-rental-reforms-give-tenants-more-power-in-fight-against-dodgy-agent-claims" target="_blank" rel="noopener">Tenants' Union NSW via CHOICE</a>).</p></div>
+    <div><div class="n">~2 wks</div><p>of rent is the average amount lost when that happens.</p></div>
+    <div><div class="n">2 in 5</div><p>Victorian tribunal bond cases ended with the landlord getting nothing (Anika Legal, 2022 to 2023).</p></div>
+  </div>
+</div>
+
+<section class="wrap">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step"><h3>Move in</h3><p>Walk through room by room. Mark each item Clean, Undamaged and Working, and snap photos. Each one is stamped with its time and a tamper-evident fingerprint.</p></div>
+    <div class="step"><h3>Move out</h3><p>Do the same walkthrough. RentReady lines up both inspections and shows what was already there when you moved in.</p></div>
+    <div class="step"><h3>Push back</h3><p>Enter what the agent is claiming. See what's fair, what's wear and tear, and what needs evidence, then send a ready-made reply.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Pricing</h2>
+  <div class="prices">
+    <div class="price"><h3>Move-in inspection</h3><div class="amt">Free</div><ul><li>Room-by-room checklist</li><li>Timestamped, fingerprinted photos</li><li>Condition report export</li><li>Rent increase checker</li></ul></div>
+    <div class="price feat"><span class="founding">Founding price</span><h3>Move-out Bond Pack</h3><div class="amt">$39 <small>once per move</small></div><ul><li>Move-in vs move-out comparison</li><li>Bond claim checker for your state</li><li>Reply letter and tribunal guide</li></ul><p>Pre-order now for <strong>$1</strong> and lock in the founding price. Fully refundable.</p></div>
+  </div>
+</section>
+
+<section class="wrap" id="waitlist">
+  <h2>Join the waitlist</h2>
+  <form id="wl" novalidate>
+    <label>Email<input id="wl-email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+    <label>State<select id="wl-state"><option>NSW</option><option>VIC</option><option>QLD</option><option>WA</option><option>SA</option><option>TAS</option><option>ACT</option><option>NT</option></select></label>
+    <label>Lease ends<select id="wl-when"><option value="lt3">In under 3 months</option><option value="3to6">In 3 to 6 months</option><option value="6to12">In 6 to 12 months</option><option value="later">Later</option></select></label>
+    <button class="btn primary" type="submit">Join</button>
+  </form>
+  <p class="msg" id="wl-msg" role="status"></p>
+  <div id="preorder" hidden><a class="btn primary" id="preorder-link" href="#" target="_blank" rel="noopener">Pre-order for $1</a></div>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <div class="faq">
+    <details><summary>Which states does it cover?</summary><p>All of them: NSW, VIC, QLD, WA, SA, TAS, ACT and NT. Each has its own bond, notice and tribunal rules, and RentReady uses the right ones for your state.</p></details>
+    <details><summary>Where are my photos stored?</summary><p>On your own phone or computer. Nothing is uploaded unless you export a report and send it yourself.</p></details>
+    <details><summary>Is this legal advice?</summary><p>No. RentReady gives general information and templates based on official government guidance. For advice on your situation, contact a free tenant advice service in your state.</p></details>
+    <details><summary>Can I rate my landlord?</summary><p>Not in RentReady. For reviews of rentals and agencies, look at shitrentals.org.</p></details>
+  </div>
+</section>
+
+<footer><div class="wrap">RentReady · General information, not legal advice · Made in Australia</div></footer>
 
 <script>
 (() => {
-"use strict";
-/* ---------- rules for all 8 states and territories (see RULES.md for sources) ---------- */
-/* checked: true = confirmed against an official page in Nov 2026; false = from general knowledge, verify before launch */
-const RULES = {
-  NSW: {
-    name: "New South Wales", form: "NSW condition report (Fair Trading)", checked: true,
-    tribunal: "NCAT", tribunalUrl: "https://ncat.nsw.gov.au/",
-    bondBody: "NSW Fair Trading Rental Bonds Online", disputeLine: "apply to NCAT",
-    bondSteps: [
-      "Don't sign a claim form you disagree with. Ask the agent in writing for photos, quotes or invoices for every item.",
-      "If the agent lodges a claim without your agreement, Fair Trading notifies you. You then have 14 days to apply to NCAT, or the bond is paid out as claimed.",
-      "Apply to NCAT (Consumer and Commercial Division, tenancy) and bring your move-in and move-out reports and photos.",
-      "Free help: your local Tenants' Advice and Advocacy Service (Tenants' Union of NSW)."
-    ],
-    evidenceNote: "No evidence given. Ask for photos, quotes or invoices before agreeing to anything.",
-    rentNotice: 60, rentGapMonths: 12,
-    rentChallenge: "If you think the increase is excessive, you can apply to NCAT within 30 days of getting the notice.",
-  },
-  VIC: {
-    name: "Victoria", form: "Victorian condition report (Consumer Affairs Victoria)", checked: true,
-    tribunal: "VCAT", tribunalUrl: "https://www.vcat.vic.gov.au/",
-    bondBody: "Residential Tenancies Bond Authority (RTBA)", disputeLine: "apply to Rental Dispute Resolution Victoria and, if needed, VCAT",
-    bondSteps: [
-      "Your rental provider must give you evidence (photos, invoices, receipts or quotes) at least 3 business days before lodging a claim, and it must not contradict the condition report.",
-      "Since October 2026, claiming bond without sufficient evidence is an offence in Victoria. Ask for the evidence in writing.",
-      "If you can't agree, either of you can apply to Rental Dispute Resolution Victoria (RDRV). It's free. Unresolved disputes go to VCAT.",
-      "If your rental provider doesn't lodge within 14 days of the lease ending, you can lodge your own claim with the RTBA."
-    ],
-    evidenceNote: "No evidence given. In Victoria the claim needs photos, invoices or quotes, and claiming without enough evidence is an offence since October 2026.",
-    rentNotice: 60, rentGapMonths: 12,
-    rentChallenge: "If you think the increase is excessive, ask Consumer Affairs Victoria for a free rent assessment within 30 days of getting the notice.",
-  },
-  QLD: {
-    name: "Queensland", form: "Entry condition report (RTA Form 1a)", checked: true,
-    tribunal: "QCAT", tribunalUrl: "https://www.qcat.qld.gov.au/",
-    bondBody: "Residential Tenancies Authority (RTA)", disputeLine: "use the RTA's free dispute resolution service and, if needed, apply to QCAT",
-    bondSteps: [
-      "If your lessor or agent claims part of the bond, they must give you evidence (such as photos or a tradesperson's quote) within 14 days of making the claim.",
-      "If you disagree, tell the RTA. The RTA offers free dispute resolution to help you both reach an agreement.",
-      "If dispute resolution doesn't settle it, you can apply to QCAT. Bring your entry and exit condition reports and photos.",
-      "Free help: Tenants Queensland."
-    ],
-    evidenceNote: "No evidence given. In Queensland the lessor must give you evidence within 14 days of claiming bond. Ask for it in writing.",
-    rentNotice: 0, rentNoticeMonths: 2, rentGapMonths: 12,
-    rentChallenge: "If you think the increase is excessive, talk to your lessor first, then apply for RTA dispute resolution or to QCAT within 30 days of getting the notice.",
-  },
-  WA: {
-    name: "Western Australia", form: "Property condition report (Consumer Protection WA)", checked: true,
-    tribunal: "Magistrates Court", tribunalUrl: "https://www.consumerprotection.wa.gov.au/wa-rent-reforms",
-    bondBody: "Bonds Administration (Consumer Protection WA)", disputeLine: "dispute the release application so the Commissioner for Consumer Protection decides it",
-    bondSteps: [
-      "Your landlord has to explain any claim under set categories when applying to release the bond.",
-      "If you disagree, dispute the online release application. The Commissioner for Consumer Protection then decides who gets the bond.",
-      "If either of you disagrees with that decision, you can appeal to the Magistrates Court within 7 days.",
-      "Free help: Circle Green Community Legal (tenancy advice)."
-    ],
-    evidenceNote: "No evidence given. Ask for photos, quotes or invoices for each category your landlord has claimed under.",
-    rentNotice: 60, rentGapMonths: 12,
-    rentChallenge: "If you think the increase is excessive, contact Consumer Protection WA or a tenant advocate about applying to the Magistrates Court.",
-  },
-  SA: {
-    name: "South Australia", form: "Inspection sheet (Consumer and Business Services)", checked: true,
-    tribunal: "SACAT", tribunalUrl: "https://www.sacat.sa.gov.au/",
-    bondBody: "Consumer and Business Services (CBS)", disputeLine: "apply to SACAT",
-    bondSteps: [
-      "Don't sign a bond refund form you disagree with. Ask your landlord in writing for photos, quotes or invoices.",
-      "If your landlord applies to CBS for part of the bond and you disagree, CBS will tell you how long you have to dispute it. Disputed claims go to SACAT.",
-      "Apply to SACAT and bring your ingoing and outgoing inspection sheets and photos.",
-      "Free help: CBS tenancy advice and community legal centres."
-    ],
-    evidenceNote: "No evidence given. Ask for photos, quotes or invoices before agreeing to anything.",
-    rentNotice: 60, rentGapMonths: 12,
-    rentChallenge: "If you think the increase is excessive, you can apply to SACAT within 90 days of getting the notice.",
-  },
-  TAS: {
-    name: "Tasmania", form: "Condition report (Consumer, Building and Occupational Services)", checked: false,
-    tribunal: "Residential Tenancy Commissioner", tribunalUrl: "https://cbos.tas.gov.au/topics/housing/renting",
-    bondBody: "Rental Deposit Authority (MyBond)", disputeLine: "ask the Residential Tenancy Commissioner to decide",
-    bondSteps: [
-      "Don't agree to a claim you think is unfair. Ask your landlord in writing for photos, quotes or invoices.",
-      "If you dispute the claim, the Rental Deposit Authority refers it to the Residential Tenancy Commissioner, who decides how the bond is split.",
-      "Send the Commissioner your condition reports and photos.",
-      "Free help: Tenants' Union of Tasmania."
-    ],
-    evidenceNote: "No evidence given. Ask for photos, quotes or invoices before agreeing to anything.",
-    rentNotice: 60, rentGapMonths: 12,
-    rentChallenge: "If you think the increase is unreasonable, apply to the Residential Tenancy Commissioner with the Application for Unreasonable Rent Increase form. In Tasmania rent usually can only rise at the start, renewal or extension of a lease, or 12 months into a longer lease.",
-  },
-  ACT: {
-    name: "Australian Capital Territory", form: "Condition report (Access Canberra)", checked: true,
-    tribunal: "ACAT", tribunalUrl: "https://www.acat.act.gov.au/",
-    bondBody: "Access Canberra Rental Bonds", disputeLine: "apply to ACAT",
-    bondSteps: [
-      "Don't sign a bond refund form you disagree with. Ask your lessor in writing for photos, quotes or invoices.",
-      "If your lessor claims part of the bond and you disagree, Access Canberra will hold the disputed amount while the dispute is decided.",
-      "Apply to ACAT with your condition reports and photos.",
-      "Free help: the Tenants' Advice Service (Legal Aid ACT)."
-    ],
-    evidenceNote: "No evidence given. Ask for photos, quotes or invoices before agreeing to anything.",
-    rentNotice: 56, rentGapMonths: 12,
-    rentChallenge: "In the ACT, an increase more than 10% above Canberra rental CPI growth needs your written agreement or an ACAT order. You can apply to ACAT for a review no later than 2 weeks before the increase starts.",
-  },
-  NT: {
-    name: "Northern Territory", form: "Condition report (NT Consumer Affairs)", checked: false,
-    tribunal: "NTCAT", tribunalUrl: "https://ntcat.nt.gov.au/",
-    bondBody: "your landlord or agent (the NT has no bond authority)", disputeLine: "apply to NTCAT",
-    bondSteps: [
-      "In the NT your landlord or agent holds the bond. If they want to keep some, they must give you a notice of intention to retain it (form RT08).",
-      "If you disagree, tell them in writing and ask for photos, quotes or invoices.",
-      "If you can't agree, apply to NTCAT. Bring your condition reports and photos.",
-      "Free help: Darwin Community Legal Service (tenancy advice)."
-    ],
-    evidenceNote: "No evidence given. Ask for photos, quotes or invoices before agreeing to anything.",
-    rentNotice: 30, rentGapMonths: 6,
-    rentChallenge: "If you think the increase is excessive, you can apply to NTCAT. Contact NT Consumer Affairs for the current time limits.",
-  }
-};
-const CATS = {
-  cleaning:{label:"General cleaning"}, carpet:{label:"Carpet cleaning or replacement", life:10},
-  paint:{label:"Wall marks or repainting", life:8}, damage:{label:"Damage to fixtures or fittings"},
-  garden:{label:"Garden or lawn"}, rubbish:{label:"Rubbish removal"}, rent:{label:"Unpaid rent or bills"}, other:{label:"Other"}
-};
-const DEFAULT_ROOMS = {
-  "Entry / hallway":["Walls","Floor","Doors and locks","Light fittings"],
-  "Living room":["Walls","Floor / carpet","Windows and screens","Blinds / curtains","Power points"],
-  "Kitchen":["Benchtops","Cupboards","Oven and cooktop","Rangehood","Sink and taps","Floor"],
-  "Bedroom 1":["Walls","Floor / carpet","Wardrobe","Windows and screens","Blinds / curtains"],
-  "Bathroom":["Shower / screen","Toilet","Vanity and taps","Tiles and grout","Exhaust fan","Mirror"],
-  "Laundry":["Tub and taps","Floor","Walls"],
-  "Outside":["Garden / lawn","Driveway / parking","Bins"]
-};
-const uid = () => Math.random().toString(36).slice(2,10);
-const blankCond = () => ({c:"",u:"",w:"",note:""});
-function makeRooms(sample){
-  return Object.entries(DEFAULT_ROOMS).map(([name,items]) => ({
-    id:uid(), name, items: items.map(n => ({id:uid(), name:n, in:blankCond(), out:blankCond()}))
-  }));
-}
-function sampleState(){
-  const rooms = makeRooms();
-  const set = (room,item,ph,vals) => { const r = rooms.find(x=>x.name===room); const i = r.items.find(x=>x.name===item); Object.assign(i[ph], vals); };
-  rooms.forEach(r => r.items.forEach(i => { i.in = {c:"Y",u:"Y",w:"Y",note:""}; }));
-  set("Living room","Floor / carpet","in",{c:"Y",u:"N",w:"Y",note:"Faded patch near balcony door, small burn mark by window (approx 2cm)"});
-  set("Kitchen","Oven and cooktop","in",{c:"N",u:"Y",w:"Y",note:"Grease build-up inside oven door"});
-  set("Bedroom 1","Walls","in",{c:"Y",u:"N",w:"Y",note:"Blu-tack marks and two picture hooks above bed"});
-  rooms.forEach(r => r.items.forEach(i => { i.out = {...i.in}; }));
-  set("Living room","Floor / carpet","out",{c:"Y",u:"N",w:"Y",note:"Same faded patch and burn mark as move-in"});
-  set("Kitchen","Oven and cooktop","out",{c:"Y",u:"Y",w:"Y",note:"Cleaned"});
-  set("Bathroom","Tiles and grout","out",{c:"N",u:"Y",w:"Y",note:"Some mould on grout in shower corner"});
-  return {
-    example:true,
-    tenancy:{address:"Unit 4, 12 Example St, Marrickville NSW 2204", state:"NSW", rent:620, bond:2480, moveIn:"2025-01-18", moveOut:"2026-11-14", agent:"Example Property Co", tenants:"Alex Taylor, Sam Nguyen"},
-    rooms, photos:[],
-    claims:[
-      {id:uid(), desc:"Carpet replacement, living room", cat:"carpet", amount:1400, noted:"yes", evidence:"no", wear:false, age:9},
-      {id:uid(), desc:"Professional oven clean", cat:"cleaning", amount:180, noted:"yes", evidence:"yes", wear:false, age:""},
-      {id:uid(), desc:"Mould treatment, bathroom grout", cat:"cleaning", amount:220, noted:"no", evidence:"yes", wear:false, age:""},
-      {id:uid(), desc:"Patch and paint bedroom wall", cat:"paint", amount:450, noted:"yes", evidence:"no", wear:true, age:6}
-    ],
-    rent:{lease:"periodic", last:"2025-11-20", notice:"2026-10-01", start:"2026-11-20", current:620, proposed:680}
-  };
-}
-function emptyState(){
-  return { example:false, tenancy:{address:"",state:"NSW",rent:"",bond:"",moveIn:"",moveOut:"",agent:"",tenants:""},
-    rooms:makeRooms(), photos:[], claims:[], rent:{lease:"periodic",last:"",notice:"",start:"",current:"",proposed:""} };
-}
+  /* Fill these in before launch:
+     WAITLIST_ENDPOINT: a form backend that accepts a JSON POST (for example a Formspree or Tally form URL).
+     PREORDER_URL: a Stripe Payment Link for the $1 refundable pre-order. */
+  const WAITLIST_ENDPOINT = "";
+  const PREORDER_URL = "";
 
-/* ---------- storage: IndexedDB on this device only ---------- */
-let idb = null;
-function openDB(){
-  return new Promise(res => {
+  const form = document.getElementById("wl"), msg = document.getElementById("wl-msg");
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = document.getElementById("wl-email").value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent = "Enter an email address like you@example.com."; return; }
+    const data = { email, state: document.getElementById("wl-state").value, leaseEnds: document.getElementById("wl-when").value, source: location.hostname || "preview" };
+    if(!WAITLIST_ENDPOINT){ msg.textContent = "The waitlist isn't connected yet. This is a preview of the page."; showPreorder(); return; }
+    msg.textContent = "Joining…";
     try{
-      const rq = indexedDB.open("rentready",1);
-      rq.onupgradeneeded = () => { const d = rq.result; d.createObjectStore("kv"); d.createObjectStore("photos"); };
-      rq.onsuccess = () => res(rq.result); rq.onerror = () => res(null);
-    }catch(e){ res(null); }
+      const r = await fetch(WAITLIST_ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" }, body: JSON.stringify(data) });
+      if(!r.ok) throw new Error(r.status);
+      msg.textContent = "You're on the list. We'll email you before your lease ends.";
+      form.reset(); showPreorder();
+    }catch(err){ msg.textContent = "That didn't go through. Check your connection and try again."; }
   });
-}
-function tx(store, mode, fn){
-  return new Promise(res => {
-    if(!idb) return res(null);
-    try{ const t = idb.transaction(store, mode); const s = t.objectStore(store); const r = fn(s); t.oncomplete = () => res(r && r.result); t.onerror = () => res(null); }
-    catch(e){ res(null); }
-  });
-}
-const memPhotos = new Map();
-async function putPhoto(id, blob){ memPhotos.set(id, blob); await tx("photos","readwrite", s => s.put(blob, id)); }
-async function getPhoto(id){ if(memPhotos.has(id)) return memPhotos.get(id); const b = await tx("photos","readonly", s => s.get(id)); if(b) memPhotos.set(id,b); return b; }
-async function delPhoto(id){ memPhotos.delete(id); await tx("photos","readwrite", s => s.delete(id)); }
-let saveTimer = null;
-function save(){
-  clearTimeout(saveTimer);
-  $("#saveState").textContent = "Saving…";
-  saveTimer = setTimeout(async () => {
-    await tx("kv","readwrite", s => s.put(JSON.stringify(S), "state"));
-    $("#saveState").textContent = idb ? "Saved on this device" : "Not saved (storage blocked)";
-  }, 300);
-}
-
-/* ---------- helpers ---------- */
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money = n => isFinite(+n) && n !== "" ? "$" + Math.round(+n).toLocaleString("en-AU") : "–";
-const fmtDate = d => d ? new Date(d).toLocaleDateString("en-AU",{day:"numeric",month:"short",year:"numeric"}) : "–";
-const fmtStamp = t => new Date(t).toLocaleString("en-AU",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
-function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
-async function sha256(blob){
-  try{ const buf = await blob.arrayBuffer(); const h = await crypto.subtle.digest("SHA-256", buf); return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
-  catch(e){ return "unavailable"; }
-}
-async function shrink(file){
-  try{
-    const url = URL.createObjectURL(file);
-    const img = await new Promise((ok,no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
-    const max = 1600, k = Math.min(1, max / Math.max(img.width, img.height));
-    const c = document.createElement("canvas"); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
-    return await new Promise(ok => c.toBlob(b => ok(b || file), "image/jpeg", 0.85));
-  }catch(e){ return file; }
-}
-const blobToDataURL = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
-async function copyText(text){
-  try{ await navigator.clipboard.writeText(text); toast("Copied"); }
-  catch(e){ toast("Select the text and copy it manually"); }
-}
-let downloads = null;
-if(window.claude && claude.use) claude.use("downloads").then(d => { downloads = d; render(); }).catch(()=>{});
-async function offerFile(filename, data){
-  if(!downloads){
-    if(window.claude){ toast("Saving files isn't available here"); return; }
-    const url = URL.createObjectURL(new Blob([data])); const a = document.createElement("a");
-    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000); toast("Saved " + filename); return;
+  function showPreorder(){
+    if(!PREORDER_URL) return;
+    document.getElementById("preorder-link").href = PREORDER_URL;
+    document.getElementById("preorder").hidden = false;
   }
-  try{ await downloads.save({filename, data}); toast("Saved " + filename); }
-  catch(e){ if(e && e.code !== "declined") toast("Couldn't save the file"); }
-}
-
-/* ---------- state ---------- */
-let S = sampleState();
-let phase = "in";
-let openRoom = null;
-
-/* ---------- views ---------- */
-function exampleBanner(){
-  if(!S.example) return "";
-  return `<div class="banner"><span><b>Example tenancy.</b> These details are made up so you can see how it works.</span><button class="primary" data-act="fresh">Start my own tenancy</button></div>`;
-}
-function viewTenancy(){
-  const t = S.tenancy, R = RULES[t.state];
-  const done = S.rooms.reduce((a,r)=>a+r.items.filter(i=>i.in.c&&i.in.u&&i.in.w).length,0);
-  const total = S.rooms.reduce((a,r)=>a+r.items.length,0);
-  return `${exampleBanner()}
-  <section class="stack"><h2>Your tenancy</h2><p class="lead">Set this up on move-in day. Everything stays on this phone or computer until you export it.</p></section>
-  <div class="stats">
-    <div class="stat"><div class="n">${money(t.bond)}</div><div class="l">Bond at stake</div></div>
-    <div class="stat"><div class="n">${done}/${total}</div><div class="l">Move-in items checked</div></div>
-    <div class="stat"><div class="n">${S.photos.length}</div><div class="l">Timestamped photos</div></div>
-  </div>
-  <div class="card">
-    <div class="grid2">
-      <label>Address<input id="t-address" data-t="address" value="${esc(t.address)}" placeholder="Unit, street, suburb, postcode"></label>
-      <label>State<select id="t-state" data-t="state">${Object.entries(RULES).map(([k,v])=>`<option value="${k}" ${k===t.state?"selected":""}>${v.name}</option>`).join("")}</select></label>
-      <label>Tenant names<input id="t-tenants" data-t="tenants" value="${esc(t.tenants)}"></label>
-      <label>Agent or landlord<input id="t-agent" data-t="agent" value="${esc(t.agent)}"></label>
-      <label>Weekly rent ($)<input id="t-rent" data-t="rent" type="number" inputmode="decimal" value="${esc(t.rent)}"></label>
-      <label>Bond paid ($)<input id="t-bond" data-t="bond" type="number" inputmode="decimal" value="${esc(t.bond)}"></label>
-      <label>Move-in date<input id="t-moveIn" data-t="moveIn" type="date" value="${esc(t.moveIn)}"></label>
-      <label>Move-out date<input id="t-moveOut" data-t="moveOut" type="date" value="${esc(t.moveOut)}"></label>
-    </div>
-    <p class="fine">RentReady covers every state and territory. Reports follow the ${esc(R.form)} layout (Clean / Undamaged / Working).</p>
-  </div>
-  <div class="card">
-    <h3>Export</h3>
-    <p class="fine">Download a self-contained report with every photo, its capture time and its SHA-256 fingerprint. Send it to your agent within the deadline on your lease, and keep a copy.</p>
-    <div class="row">
-      <button data-act="export-in">Move-in report</button>
-      <button data-act="export-out">Move-out comparison</button>
-      <button class="ghost" data-act="backup">Backup data (.json)</button>
-    </div>
-    ${downloads || !window.claude ? "" : `<p class="fine">File saving isn't available in this view.</p>`}
-  </div>
-  <p class="fine">RentReady gives general information, not legal advice. Check your state's official rules or talk to a free tenant advice service for your situation.</p>`;
-}
-function ynBtn(room,item,key){
-  const v = item[phase][key];
-  return `<button class="yn" data-act="yn" data-room="${room.id}" data-item="${item.id}" data-key="${key}" data-v="${v}" aria-label="${item.name} ${({c:"clean",u:"undamaged",w:"working"})[key]}: ${v||"not set"}">${v||"–"}</button>`;
-}
-function viewInspect(){
-  const rooms = S.rooms.map(r => {
-    const set = r.items.filter(i=>i[phase].c&&i[phase].u&&i[phase].w).length;
-    const pics = S.photos.filter(p=>p.room===r.id && p.phase===phase);
-    const open = openRoom === r.id;
-    return `<div class="card">
-      <div class="row" style="justify-content:space-between">
-        <h3>${esc(r.name)}</h3>
-        <div class="row"><span class="tagchip ${set===r.items.length?"ok":""}">${set}/${r.items.length} items</span><span class="tagchip">${pics.length} photos</span>
-        <button class="ghost" data-act="toggle" data-room="${r.id}" aria-expanded="${open}">${open?"Close":"Open"}</button></div>
-      </div>
-      ${open ? `<div class="tw"><table>
-        <thead><tr><th>Item</th><th class="c">Clean</th><th class="c">Undam.</th><th class="c">Working</th><th>Notes</th></tr></thead>
-        <tbody>${r.items.map(i=>`<tr><td>${esc(i.name)}</td><td class="c">${ynBtn(r,i,"c")}</td><td class="c">${ynBtn(r,i,"u")}</td><td class="c">${ynBtn(r,i,"w")}</td>
-          <td><input id="n-${phase}-${i.id}" data-note="${i.id}" data-room="${r.id}" value="${esc(i[phase].note)}" placeholder="Marks, damage, location"></td></tr>`).join("")}</tbody></table></div>
-        <div class="row"><button data-act="allY" data-room="${r.id}">Mark all Y</button>
-          <label class="btn" style="display:inline-flex">Add photos<input type="file" accept="image/*" capture="environment" multiple data-upload="${r.id}" hidden></label></div>
-        <div class="photos" data-photos="${r.id}">${pics.map(p=>photoTile(p)).join("") || `<p class="fine">No ${phase==="in"?"move-in":"move-out"} photos yet. Take a wide shot of the room, then close-ups of anything marked N.</p>`}</div>` : ""}
-    </div>`;
-  }).join("");
-  return `${exampleBanner()}
-  <section class="stack"><h2>Inspection</h2>
-  <p class="lead">Go room by room. Tap each box to cycle Y, N and blank. Photos are stamped with the time they were taken and fingerprinted so you can show they weren't edited later.</p>
-  <div class="phase" role="group" aria-label="Inspection"><button data-act="phase" data-p="in" aria-pressed="${phase==="in"}">Move-in</button><button data-act="phase" data-p="out" aria-pressed="${phase==="out"}">Move-out</button></div></section>
-  ${rooms}
-  <div class="row"><input id="newRoom" placeholder="Add a room, e.g. Bedroom 2" style="max-width:280px"><button data-act="addRoom">Add room</button></div>`;
-}
-function photoTile(p){
-  return `<div class="ph"><img data-pid="${p.id}" alt="${esc(p.name)}"><div class="meta">${fmtStamp(p.taken)}<br>#${p.hash.slice(0,10)}</div><button class="x" data-act="delPhoto" data-pid="${p.id}" aria-label="Remove photo">×</button></div>`;
-}
-function changes(){
-  const out = [];
-  S.rooms.forEach(r => r.items.forEach(i => {
-    const worse = ["c","u","w"].filter(k => i.in[k]==="Y" && i.out[k]==="N");
-    const pre = ["c","u","w"].filter(k => i.in[k]==="N");
-    if(worse.length || pre.length || (i.out.note && i.out.note!==i.in.note)) out.push({r,i,worse,pre});
-  }));
-  return out;
-}
-function viewCompare(){
-  const ch = changes();
-  const worse = ch.filter(c=>c.worse.length).length, pre = ch.filter(c=>c.pre.length).length;
-  return `${exampleBanner()}
-  <section class="stack"><h2>Move-in vs move-out</h2><p class="lead">Anything that was already marked N at move-in is pre-existing. That's your strongest answer to a bond claim.</p></section>
-  <div class="stats">
-    <div class="stat"><div class="n" style="color:var(--bad)">${worse}</div><div class="l">Items worse at move-out</div></div>
-    <div class="stat"><div class="n" style="color:var(--ok)">${pre}</div><div class="l">Pre-existing issues on record</div></div>
-  </div>
-  ${ch.length ? ch.map(({r,i,worse,pre}) => {
-    const ip = S.photos.filter(p=>p.room===r.id&&p.phase==="in").slice(0,2), op = S.photos.filter(p=>p.room===r.id&&p.phase==="out").slice(0,2);
-    const chip = worse.length ? `<span class="tagchip bad">Worse</span>` : pre.length ? `<span class="tagchip ok">Pre-existing</span>` : `<span class="tagchip">Note changed</span>`;
-    return `<div class="card"><div class="row" style="justify-content:space-between"><h3>${esc(r.name)} · ${esc(i.name)}</h3>${chip}</div>
-      <div class="cmp"><div><h4>Move-in ${i.in.c||"–"}/${i.in.u||"–"}/${i.in.w||"–"}</h4><p>${esc(i.in.note)||"<span class='fine'>No note</span>"}</p><div class="photos">${ip.map(photoTile).join("")}</div></div>
-      <div><h4>Move-out ${i.out.c||"–"}/${i.out.u||"–"}/${i.out.w||"–"}</h4><p>${esc(i.out.note)||"<span class='fine'>No note</span>"}</p><div class="photos">${op.map(photoTile).join("")}</div></div></div></div>`;
-  }).join("") : `<div class="card"><p>No differences yet. Fill in the move-out inspection to see them here.</p></div>`}`;
-}
-function assess(c){
-  const R = RULES[S.tenancy.state], cat = CATS[c.cat] || CATS.other, amt = +c.amount || 0;
-  const reasons = []; let fair = amt, level = "ok";
-  if(c.noted === "yes"){ fair = 0; level = "bad"; reasons.push("It was already recorded at move-in, so it isn't damage you caused."); }
-  if(c.wear && c.cat !== "rent"){ fair = 0; level = "bad"; reasons.push("Fair wear and tear from normal living can't be taken from your bond."); }
-  if(cat.life && +c.age && fair > 0){
-    const left = Math.max(0, 1 - (+c.age)/cat.life); const dep = Math.round(amt*left);
-    if(dep < fair){ fair = dep; if(level==="ok") level = "warn"; reasons.push(`At ${c.age} years old with a typical life of about ${cat.life} years, its remaining value is around ${money(dep)}. You shouldn't pay for a brand-new replacement.`); }
-  }
-  if(c.evidence === "no"){ if(level==="ok") level = "warn"; reasons.push(R.evidenceNote); }
-  if(c.noted === "unsure" && level==="ok"){ level = "warn"; reasons.push("Check your move-in report and photos for this item."); }
-  if(!reasons.length) reasons.push("This looks like a fair claim if the amount matches the evidence.");
-  const label = level==="bad" ? "Dispute" : level==="warn" ? "Negotiate" : "Likely fair";
-  return {fair, level, label, reasons};
-}
-function viewBond(){
-  const t = S.tenancy, R = RULES[t.state];
-  const rows = S.claims.map(c => ({c, a:assess(c)}));
-  const claimed = rows.reduce((s,x)=>s+(+x.c.amount||0),0), fair = rows.reduce((s,x)=>s+x.a.fair,0);
-  return `${exampleBanner()}
-  <section class="stack"><h2>Bond claim check</h2><p class="lead">Enter each item the agent wants to take from your bond. RentReady checks it against your move-in record and ${esc(R.name)} rules.</p></section>
-  <div class="stats">
-    <div class="stat"><div class="n">${money(claimed)}</div><div class="l">Agent is claiming</div></div>
-    <div class="stat"><div class="n">${money(fair)}</div><div class="l">Looks fair to pay</div></div>
-    <div class="stat"><div class="n" style="color:var(--ok)">${money(claimed-fair)}</div><div class="l">Worth pushing back on</div></div>
-  </div>
-  ${rows.map(({c,a}) => `<div class="card">
-    <div class="grid2">
-      <label>What they're claiming for<input id="c-desc-${c.id}" data-c="${c.id}" data-f="desc" value="${esc(c.desc)}"></label>
-      <label>Type<select id="c-cat-${c.id}" data-c="${c.id}" data-f="cat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===c.cat?"selected":""}>${v.label}</option>`).join("")}</select></label>
-      <label>Amount ($)<input id="c-amt-${c.id}" data-c="${c.id}" data-f="amount" type="number" inputmode="decimal" value="${esc(c.amount)}"></label>
-      <label>Noted at move-in?<select id="c-noted-${c.id}" data-c="${c.id}" data-f="noted">${[["no","No"],["yes","Yes, already there"],["unsure","Not sure"]].map(([k,v])=>`<option value="${k}" ${k===c.noted?"selected":""}>${v}</option>`).join("")}</select></label>
-      <label>Evidence provided?<select id="c-ev-${c.id}" data-c="${c.id}" data-f="evidence">${[["no","No"],["yes","Yes"]].map(([k,v])=>`<option value="${k}" ${k===c.evidence?"selected":""}>${v}</option>`).join("")}</select></label>
-      ${CATS[c.cat]&&CATS[c.cat].life ? `<label>Age of item (years)<input id="c-age-${c.id}" data-c="${c.id}" data-f="age" type="number" inputmode="decimal" value="${esc(c.age)}" placeholder="If known"></label>` : ""}
-    </div>
-    <label class="check"><input type="checkbox" id="c-wear-${c.id}" data-c="${c.id}" data-f="wear" ${c.wear?"checked":""}> It's normal wear from everyday living (faded paint, worn carpet in walkways, minor scuffs)</label>
-    <div class="verdict ${a.level}"><div class="row"><span class="tagchip ${a.level}">${a.label}</span><strong>${money(a.fair)} of ${money(c.amount)} looks fair</strong></div>${a.reasons.map(r=>`<p class="fine" style="color:var(--ink)">${esc(r)}</p>`).join("")}</div>
-    <div><button class="ghost" data-act="delClaim" data-c="${c.id}">Remove item</button></div>
-  </div>`).join("")}
-  <div><button data-act="addClaim">Add a claimed item</button></div>
-  ${rows.length ? `<div class="card"><h3>What to do next in ${esc(R.name)}</h3><ol class="steps">${R.bondSteps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
-    <p class="fine"><a href="${R.tribunalUrl}" target="_blank" rel="noopener">${R.tribunal} website</a></p></div>${unchecked(R)}
-  <div class="card"><div class="row" style="justify-content:space-between"><h3>Your reply to the agent</h3><div class="row"><button data-act="copyLetter">Copy</button>${downloads || !window.claude ?`<button data-act="saveLetter">Save .txt</button>`:""}</div></div>
-    <div class="letter" id="letter">${esc(letter(rows, claimed, fair))}</div>
-    <p class="fine">A template, not legal advice. Edit it before sending, and attach your move-in report.</p></div>` : ""}`;
-}
-function letter(rows, claimed, fair){
-  const t = S.tenancy, R = RULES[t.state];
-  const disputed = rows.filter(x => x.a.fair < (+x.c.amount||0));
-  const today = new Date().toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"});
-  return `${today}
-
-To ${t.agent || "[agent or landlord]"}
-
-Re: Bond claim for ${t.address || "[property address]"}
-
-Thank you for your bond claim of ${money(claimed)}. We have compared it with the condition report and timestamped photos from our move-in on ${fmtDate(t.moveIn)} and our move-out inspection on ${fmtDate(t.moveOut)}.
-
-We do not agree to the following items:
-
-${disputed.map(({c,a},n) => `${n+1}. ${c.desc} (${money(c.amount)}). ${a.reasons.join(" ")} We would agree to ${money(a.fair)}.`).join("\n\n") || "[No disputed items]"}
-
-Please send photos, quotes or invoices for any item you still wish to claim. We are willing to agree to ${money(fair)} in total, with the remaining ${money((+t.bond||0)-fair)} of our ${money(t.bond)} bond returned to us.
-
-If we cannot agree, we will ${R.disputeLine}. Please do not ${t.state==="NT" ? "keep" : `lodge a claim with the ${R.bondBody} for`} the disputed amounts without our agreement.
-
-Our move-in condition report and photos are attached.
-
-Regards,
-${t.tenants || "[your names]"}`;
-}
-function addMonths(d,m){ const x = new Date(d); x.setMonth(x.getMonth()+m); return x; }
-function viewRent(){
-  const r = S.rent, R = RULES[S.tenancy.state];
-  const checks = [];
-  if(r.notice && r.start){
-    const days = Math.round((new Date(r.start) - new Date(r.notice))/864e5);
-    const need = R.rentNoticeMonths ? Math.round((addMonths(r.notice, R.rentNoticeMonths) - new Date(r.notice))/864e5) : R.rentNotice;
-    const needTxt = R.rentNoticeMonths ? `${R.rentNoticeMonths} months'` : `${R.rentNotice} days'`;
-    checks.push({ok: days >= need, t:`Notice: ${days} days before the new rent starts`, d: days >= need ? `Meets the minimum of ${needTxt} written notice.` : `Less than the ${needTxt} written notice required. The increase can't start on this date.`});
-  }
-  if(r.last && r.start){
-    const earliest = addMonths(r.last, R.rentGapMonths); const ok = new Date(r.start) >= earliest;
-    checks.push({ok, t:`Last increase: ${fmtDate(r.last)}`, d: ok ? `At least ${R.rentGapMonths} months since the last increase.` : `Rent can only go up once every ${R.rentGapMonths} months. The earliest date is ${fmtDate(earliest)}.`});
-  }
-  if(r.lease === "fixed") checks.push({ok:null, t:"Fixed-term lease", d:"During a fixed term, rent can only go up if your agreement allows it and says how the increase is worked out. Check your lease."});
-  const pct = r.current && r.proposed ? ((+r.proposed - +r.current)/+r.current*100) : null;
-  return `${exampleBanner()}
-  <section class="stack"><h2>Rent increase check</h2><p class="lead">Got a rent increase notice? Check it against the ${esc(R.name)} rules on notice and frequency.</p></section>
-  <div class="card"><div class="grid2">
-    <label>Lease type<select id="r-lease" data-r="lease"><option value="periodic" ${r.lease==="periodic"?"selected":""}>Periodic (month to month)</option><option value="fixed" ${r.lease==="fixed"?"selected":""}>Fixed term</option></select></label>
-    <label>Date of last increase (or move-in)<input id="r-last" data-r="last" type="date" value="${esc(r.last)}"></label>
-    <label>Date you got the notice<input id="r-notice" data-r="notice" type="date" value="${esc(r.notice)}"></label>
-    <label>New rent starts<input id="r-start" data-r="start" type="date" value="${esc(r.start)}"></label>
-    <label>Current rent ($/week)<input id="r-current" data-r="current" type="number" inputmode="decimal" value="${esc(r.current)}"></label>
-    <label>New rent ($/week)<input id="r-proposed" data-r="proposed" type="number" inputmode="decimal" value="${esc(r.proposed)}"></label>
-  </div></div>
-  ${pct!==null ? `<div class="stats"><div class="stat"><div class="n">${pct>=0?"+":""}${pct.toFixed(1)}%</div><div class="l">Increase</div></div><div class="stat"><div class="n">${money((+r.proposed - +r.current)*52)}</div><div class="l">Extra per year</div></div></div>` : ""}
-  ${checks.map(c => `<div class="card"><div class="verdict ${c.ok===null?"warn":c.ok?"ok":"bad"}"><div class="row"><span class="tagchip ${c.ok===null?"warn":c.ok?"ok":"bad"}">${c.ok===null?"Check":c.ok?"OK":"Not valid"}</span><strong>${esc(c.t)}</strong></div><p>${esc(c.d)}</p></div></div>`).join("")}
-  <div class="card"><h3>Think it's too high?</h3><p>${esc(R.rentChallenge)}</p><p class="fine">General information based on ${esc(R.name)} rules as of November 2026, not legal advice.</p></div>${unchecked(R)}`;
-}
-
-function unchecked(R){
-  return R.checked ? "" : `<div class="banner"><span><b>Rules still being checked.</b> We haven't confirmed every ${esc(R.name)} rule against an official source yet. Check with <a href="${R.tribunalUrl}" target="_blank" rel="noopener">the official site</a> before you act.</span></div>`;
-}
-/* ---------- export ---------- */
-async function reportHTML(kind){
-  const t = S.tenancy, R = RULES[t.state];
-  const pics = {};
-  for(const p of S.photos){ const b = await getPhoto(p.id); if(b) pics[p.id] = await blobToDataURL(b); }
-  const ph = (room, phs) => S.photos.filter(p=>p.room===room && p.phase===phs).map(p => `<figure><img src="${pics[p.id]||""}" alt=""><figcaption>${fmtStamp(p.taken)}<br>SHA-256 ${p.hash}</figcaption></figure>`).join("");
-  const body = S.rooms.map(r => `<h2>${esc(r.name)}</h2><table><tr><th>Item</th>${kind==="out"?"<th>Move-in C/U/W</th><th>Move-in note</th>":""}<th>${kind==="out"?"Move-out ":""}C/U/W</th><th>Note</th></tr>
-    ${r.items.map(i => { const a = i[kind==="out"?"out":"in"]; return `<tr><td>${esc(i.name)}</td>${kind==="out"?`<td>${i.in.c||"-"}/${i.in.u||"-"}/${i.in.w||"-"}</td><td>${esc(i.in.note)}</td>`:""}<td>${a.c||"-"}/${a.u||"-"}/${a.w||"-"}</td><td>${esc(a.note)}</td></tr>`; }).join("")}</table>
-    <div class="ph">${kind==="out"?ph(r.id,"in")+ph(r.id,"out"):ph(r.id,"in")}</div>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${kind==="out"?"Move-out comparison":"Move-in condition report"} - ${esc(t.address)}</title>
-<style>body{font:14px/1.5 system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#111}table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid #ccc;padding:5px 7px;text-align:left;vertical-align:top}th{background:#eef2ee}.ph{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}figure{margin:0}img{width:100%}figcaption{font:10px monospace;word-break:break-all;color:#555}</style></head><body>
-<h1>${kind==="out"?"Move-out comparison":"Move-in condition report"}</h1>
-<p><b>Property:</b> ${esc(t.address)}<br><b>Tenants:</b> ${esc(t.tenants)}<br><b>Agent / landlord:</b> ${esc(t.agent)}<br><b>Move-in:</b> ${fmtDate(t.moveIn)} &nbsp; <b>Move-out:</b> ${fmtDate(t.moveOut)}<br><b>State:</b> ${R.name}. Layout follows the ${R.form} (C = clean, U = undamaged, W = working).</p>
-<p>Generated by RentReady on ${fmtStamp(Date.now())}. Each photo shows the time it was taken (from the device file) and a SHA-256 fingerprint of the file as it was added.</p>
-${body}</body></html>`;
-}
-
-/* ---------- render + events ---------- */
-const VIEWS = {tenancy:viewTenancy, inspect:viewInspect, compare:viewCompare, bond:viewBond, rent:viewRent};
-function route(){ const h = location.hash.slice(1); return VIEWS[h] ? h : "tenancy"; }
-function render(){
-  const r = route();
-  document.querySelectorAll("#nav a").forEach(a => a.setAttribute("aria-current", a.getAttribute("href")==="#"+r ? "page" : "false"));
-  const focusId = document.activeElement && document.activeElement.id;
-  $("#app").innerHTML = VIEWS[r]();
-  if(focusId){ const el = document.getElementById(focusId); if(el){ el.focus(); if(el.setSelectionRange && el.type==="text") { const n = el.value.length; try{el.setSelectionRange(n,n);}catch(e){} } } }
-  hydratePhotos();
-}
-async function hydratePhotos(){
-  for(const img of document.querySelectorAll("img[data-pid]")){
-    const b = await getPhoto(img.dataset.pid); if(b) img.src = URL.createObjectURL(b);
-  }
-}
-const findItem = (rid, iid) => { const r = S.rooms.find(x=>x.id===rid); return r && r.items.find(x=>x.id===iid); };
-function leaveExample(){ if(S.example){ S.example = false; } }
-
-document.addEventListener("click", async e => {
-  const b = e.target.closest("[data-act]"); if(!b) return;
-  const act = b.dataset.act;
-  if(act==="fresh"){ for(const p of S.photos) await delPhoto(p.id); S = emptyState(); save(); render(); toast("Started a new tenancy"); return; }
-  if(act==="phase"){ phase = b.dataset.p; render(); return; }
-  if(act==="toggle"){ openRoom = openRoom===b.dataset.room ? null : b.dataset.room; render(); return; }
-  if(act==="yn"){ const it = findItem(b.dataset.room, b.dataset.item); const k = b.dataset.key; it[phase][k] = ({"":"Y","Y":"N","N":""})[it[phase][k]||""]; save(); render(); return; }
-  if(act==="allY"){ const r = S.rooms.find(x=>x.id===b.dataset.room); r.items.forEach(i => ["c","u","w"].forEach(k => { if(!i[phase][k]) i[phase][k] = "Y"; })); save(); render(); return; }
-  if(act==="addRoom"){ const v = $("#newRoom").value.trim(); if(!v) return; const id = uid(); S.rooms.push({id, name:v, items:["Walls","Floor","Windows","Light fittings"].map(n=>({id:uid(),name:n,in:blankCond(),out:blankCond()}))}); openRoom = id; save(); render(); return; }
-  if(act==="delPhoto"){ const id = b.dataset.pid; S.photos = S.photos.filter(p=>p.id!==id); await delPhoto(id); save(); render(); return; }
-  if(act==="addClaim"){ S.claims.push({id:uid(), desc:"", cat:"cleaning", amount:"", noted:"no", evidence:"no", wear:false, age:""}); save(); render(); return; }
-  if(act==="delClaim"){ S.claims = S.claims.filter(c=>c.id!==b.dataset.c); save(); render(); return; }
-  if(act==="copyLetter"){ copyText($("#letter").textContent); return; }
-  if(act==="saveLetter"){ offerFile("bond-reply.txt", $("#letter").textContent); return; }
-  if(act==="export-in" || act==="export-out"){ const k = act==="export-in"?"in":"out"; toast("Building report…"); offerFile(k==="in"?"move-in-condition-report.html":"move-out-comparison.html", await reportHTML(k)); return; }
-  if(act==="backup"){ offerFile("rentready-backup.json", JSON.stringify(S, null, 2)); return; }
-});
-document.addEventListener("input", e => {
-  const el = e.target;
-  if(el.dataset.t){ S.tenancy[el.dataset.t] = el.value; save(); if(el.tagName==="SELECT") render(); return; }
-  if(el.dataset.note){ const it = findItem(el.dataset.room, el.dataset.note); it[phase].note = el.value; save(); return; }
-  if(el.dataset.c){ const c = S.claims.find(x=>x.id===el.dataset.c); const f = el.dataset.f; c[f] = el.type==="checkbox" ? el.checked : el.value; save(); clearTimeout(viewBond.t); viewBond.t = setTimeout(render, el.tagName==="SELECT"||el.type==="checkbox"?0:500); return; }
-  if(el.dataset.r){ S.rent[el.dataset.r] = el.value; save(); clearTimeout(viewRent.t); viewRent.t = setTimeout(render, el.tagName==="SELECT"?0:500); return; }
-});
-document.addEventListener("change", async e => {
-  const el = e.target; if(!el.dataset.upload) return;
-  const room = el.dataset.upload, files = [...el.files]; if(!files.length) return;
-  toast(`Adding ${files.length} photo${files.length>1?"s":""}…`);
-  for(const f of files){
-    const blob = await shrink(f); const id = uid();
-    const hash = await sha256(blob);
-    await putPhoto(id, blob);
-    S.photos.push({id, room, phase, name:f.name, taken: f.lastModified || Date.now(), added: Date.now(), hash});
-  }
-  save(); render(); toast("Photos added");
-});
-window.addEventListener("hashchange", render);
-
-(async () => {
-  render();
-  idb = await openDB();
-  const raw = await tx("kv","readonly", s => s.get("state"));
-  if(raw){ try{ S = JSON.parse(raw); }catch(e){} }
-  if(!idb) $("#saveState").textContent = "Not saved (storage blocked)";
-  render();
-})();
 })();
 </script>
